@@ -13,13 +13,13 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => { //소켓이 붙어있는 http web server에 connection 발생
-  console.log('a user connected');
+  io.emit('user entered');
   socket.on('chat message', (msg) => {
     //client가 'chat message'라는 이름의 이벤트를 보낸 경우(발생시킨 경우)
     //msg(해당 이벤트의 결과물)라는 데이터를 받아온다
     io.emit('chat message', msg); //client에게 'chat message'라는 이름의 이벤트를 보낸다
   });
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    io.emit('user leaved');
   });
 });

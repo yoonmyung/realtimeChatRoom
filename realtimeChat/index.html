@@ -34,6 +34,12 @@
       socket.on('chat message', function(msg) { //web server로부터 'chat message'라는 이름의 이벤트가 온 경우
         $('#messages').append($('<li>').text(msg)); //아이디가 messages인 태그에 <li>msg를 할당
       });
+      socket.on('user entered', function() {
+        $('#messages').append($('<li>').css("background-color", "#A9F5A9").text('회원님이 채팅방을 입장했습니다'));
+      })
+      socket.on('user leaved', function() {
+        $('#messages').append($('<li>').css("background-color", "#F79F81").text('회원님이 채팅방을 나갔습니다'));
+      });
     });
   </script>
 </body>
