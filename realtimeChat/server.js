@@ -1,6 +1,7 @@
 var app = require('express')(); //express 모듈 사용
 var http = require('http').createServer(app); //http라는 이름의 express 모듈 기반 http web server 객체 생성
 var io = require('socket.io')(http);  //http web server에 socket.io 모듈 사용 (웹 서버에 소켓이 부착되는 느낌으로)
+var userList = new Array();
 
 http.listen(3000, () => { //3000번 포트에서 대기 중인 http 웹 서버 생성
   console.log('listening on *:3000');
@@ -13,19 +14,23 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => { //소켓이 붙어있는 http web server에 connection 발생
-  console.log('new user entered: ' + socket.id);  //id는 Socket.IO의 고유 속성(socket.id)
-  io.to(socket.id).emit('create user');
+  io.to(socket.id).emit('create user'); //id는 Socket.IO의 고유 속성(socket.id)
   socket.on('create user', function(userName) { //"소켓 하나 = 웹페이지에 들어온 유저 한 명" 이라 생각하면 좋다.
     socket.userName = userName;
-    io.emit('user entered', socket.userName);
+    userList.push(socket.userName);
+    io.emit('user entered', socket.userName, userList);
   });
   socket.on('chat message', (msg) => {
     //client가 'chat message'라는 이름의 이벤트를 보낸 경우(발생시킨 경우)
     //msg(해당 이벤트의 결과물)라는 데이터를 받아온다
-    msg = socket.userName + ': ' + msg;
+    var date = new Date();
+    msg = socket.userName + ': ' + msg + '      '
+          + date.getHours() + ':' + date.getMinutes();
     io.emit('chat message', msg); //client에게 'chat message'라는 이름의 이벤트를 보낸다
   });
   socket.on('disconnect', () => {
-    io.emit('user leaved', socket.userName);
+    console.log(socket.userName + ' remove');
+    userList.splice(userList.indexOf(socket.userName), 1);
+    io.emit('user leaved', socket.userName, userList);
   });
 });
