@@ -19,7 +19,7 @@
   <div id="userList"></div>
   <ul id="messages"></ul>
   <form action="">
-    <input id="m" autocomplete="off" /><button>Send</button>
+    <input id="m" autocomplete="off"/><button>Send</button>
   </form>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -43,6 +43,7 @@
     }
     $(function () { //자동실행함수
       var socket = io();
+
       $('form').submit(function(e) {  //<form>의 <input>이 클릭될 경우
         e.preventDefault(); // prevents page reloading
         socket.emit('chat message', $('#m').val());
@@ -50,6 +51,19 @@
         //아이디가 m인 태그가 가진 값을 함께 전송
         $('#m').val('');  //아이디가 m인 태그 값 초기화
         return false;
+      });
+      $('#m').ready(function() {
+        setInterval(function() {
+          socket.emit('user typing', $('#m').val().length);
+          socket.on('user typing', function (isTyping, userName) {
+            if (isTyping) {
+              $('#'+userName).text(userName + "  입력 중...");
+            }
+            else {
+              $('#'+userName).text(userName);
+            }
+          });
+        }, 500);  //0.5초마다 반복되는 함수
       });
       socket.on('create user', function() {
         var user = new User(createUser());
