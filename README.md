@@ -12,5 +12,6 @@ Node.js + Socket.IO 이용한 실시간 채팅웹
   <li>비밀 메시지 기능</li>
   <li>IP주소로 들어오는 사람 중복 체크하기</li>
   <li>HTML, JS(Jquery) 파일 분리하기</li>
+  <li>웹 배포 연습</li>
 </ul>
 </p>

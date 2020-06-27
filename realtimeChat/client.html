@@ -13,10 +13,12 @@
     #messages li:nth-child(odd) { background: #eee; }
     #userList { width: 30%; height: 100%; float: right; border: 1px solid black;  }
     #userList li { padding 5px 10px; }
+    #changeName { float: right; }
   </style>
 </head>
 <body>
   <div id="userList"></div>
+  <button id="changeName">Change Name</button>
   <ul id="messages"></ul>
   <form action="">
     <input id="m" autocomplete="off"/><button>Send</button>
@@ -25,7 +27,15 @@
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script>
     function createUser() {
-      var userName = prompt("닉네임을 설정해주세요");
+      var userName;
+      while(true) {
+        userName = prompt("닉네임을 설정해주세요");
+        if (userName == null) {
+          alert('닉네임을 입력해야합니다.');
+          continue;
+        }
+        break;
+      }
       return userName;
     }
     function User(userName) { //클로저를 활용한 private 함수 개념 적용
@@ -41,9 +51,12 @@
         $('#userList').append($('<li id='+userList[index]+'>').text(userList[index++]));
       }
     }
+    // function chagneName() {
+    //   var newName = prompt("변경할 닉네임을 적으세요.");
+    //   return newName;
+    // }
     $(function () { //자동실행함수
       var socket = io();
-
       $('form').submit(function(e) {  //<form>의 <input>이 클릭될 경우
         e.preventDefault(); // prevents page reloading
         socket.emit('chat message', $('#m').val());
@@ -65,20 +78,40 @@
           });
         }, 500);  //0.5초마다 반복되는 함수
       });
+      // $('#changeName').submit(function() {
+      //   while (true) {
+      //     var newName = changeName();
+      //     socket.emit('change name', newName);
+      //     socket.on('change name', function (isAbleToChange) {
+      //       if (isAbleToChange) {
+      //         break;
+      //       }
+      //       else {
+      //         alert('사용할 수 없는 닉네임입니다.');
+      //       }
+      //     });
+      //   }
+      //   socket.emit('send userList');
+      //   socket.on('send userList'), function(userList) {
+      //     updateList(userList);
+      //   });
+      // });
       socket.on('create user', function() {
         var user = new User(createUser());
+        // socket.emit('check name', user.getName());
         socket.emit('create user', user.getName());
+        $('#messages').append($('<li>').css("background-color", "#A9F5A9").text(user.getName()+' 님이 채팅방을 입장했습니다'));
+        socket.emit('send userList');
+      });
+      socket.on('send userList', function(userList) {
+        updateList(userList);
       });
       socket.on('chat message', function(msg) { //web server로부터 'chat message'라는 이름의 이벤트가 온 경우
         $('#messages').append($('<li>').text(msg)); //아이디가 messages인 태그에 <li>msg를 할당
       });
-      socket.on('user entered', function(userName, userList) {
-        updateList(userList);
-        $('#messages').append($('<li>').css("background-color", "#A9F5A9").text(userName+' 님이 채팅방을 입장했습니다'));
-      });
-      socket.on('user leaved', function(userName, userList) {
-        updateList(userList);
+      socket.on('delete user', function(userName) {
         $('#messages').append($('<li>').css("background-color", "#F79F81").text(userName+' 님이 채팅방을 나갔습니다'));
+        socket.emit('send userList');
       });
     });
   </script>

@@ -18,11 +18,12 @@ io.on('connection', (socket) => { //소켓이 붙어있는 http web server에 co
   socket.on('create user', function(userName) { //"소켓 하나 = 웹페이지에 들어온 유저 한 명" 이라 생각하면 좋다.
     socket.userName = userName;
     userList.push(socket.userName);
-    io.emit('user entered', socket.userName, userList);
+  });
+  socket.on('send userList', () => {
+    io.emit('send userList', userList);
   });
   socket.on('user typing', (lengthOfMsg) => {
     var isTyping = false;
-
     if (lengthOfMsg > 0) {
       isTyping = true;
     }
@@ -32,12 +33,26 @@ io.on('connection', (socket) => { //소켓이 붙어있는 http web server에 co
     //client가 'chat message'라는 이름의 이벤트를 보낸 경우(발생시킨 경우)
     //msg(해당 이벤트의 결과물)라는 데이터를 받아온다
     var date = new Date();
-    msg = socket.userName + ': ' + msg + '      '
-          + date.getHours() + ':' + date.getMinutes();
+    msg = socket.userName + ': ' + msg + ' ' + date.getHours() + ':' + date.getMinutes();
     io.emit('chat message', msg); //client에게 'chat message'라는 이름의 이벤트를 보낸다
   });
+  // socket.on('check name', (newName) => {
+  //   var index;
+  //   var isAbleToChange = false;
+  //   for (index = 0; index < userList.length; index++) {
+  //     if (userList[index] newName) {
+  //       break;
+  //     }
+  //   }
+  //   if (index >= userList.length) {
+  //     userList[userList.indexOf(socket.userName)] = newName;
+  //     socket.userName = newName;
+  //     isAbleToChange = true;
+  //   }
+  //   io.emit('check name', isAbleToChange);
+  // }
   socket.on('disconnect', () => {
     userList.splice(userList.indexOf(socket.userName), 1);
-    io.emit('user leaved', socket.userName, userList);
+    io.emit('delete user', socket.userName);
   });
 });
